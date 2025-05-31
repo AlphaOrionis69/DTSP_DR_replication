@@ -5,6 +5,7 @@
    
    
 2. How to run in CodeBlocks (assuming that you have the folder mentioned above)
+
    Suppose your final folder mentioned above has the path C:\scip
    - In CodeBlocks, create a new project
 
