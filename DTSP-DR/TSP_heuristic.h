@@ -13,7 +13,7 @@ double tour_length(int *tour, int n, double **dist) {
     for (int i = 0; i < n - 1; i++) {
         length += dist[tour[i]][tour[i+1]];
     }
-    // add return edge if treating as cycle; omitted if fixed endpoints
+   
     return length;
 }
 
@@ -29,9 +29,10 @@ void two_opt_swap(int *tour, int i, int j) {
 }
 
 // Perform 2-opt improvement until no further improvement is possible.
-void two_opt(int *tour, int n, double **dist) {
+void two_opt(int *tour, int n, double **dist, int MaxCnt) {
     bool improved = true;
-    while (improved) {
+    int cnt = 0;
+    while (improved && cnt < MaxCnt) {
         improved = false;
         double best_delta = 0.0;
         int best_i = -1, best_j = -1;
@@ -56,6 +57,7 @@ void two_opt(int *tour, int n, double **dist) {
         }
         if (improved && best_i >= 0) {
             two_opt_swap(tour, best_i, best_j);
+            cnt++;
         }
     }
 }
@@ -64,9 +66,9 @@ void TSP_heuristic(double** travelTime, int total, int* tour) {
     num_nodes = total;
 
     // Allocate distance matrix
-    dist_matrix = malloc(num_nodes * sizeof(*dist_matrix));
+    dist_matrix = (double**)malloc(num_nodes * sizeof(*dist_matrix));
     for (int i = 0; i < num_nodes; i++) {
-        dist_matrix[i] = malloc(num_nodes * sizeof(double));
+        dist_matrix[i] = (double*)malloc(num_nodes * sizeof(double));
         for (int j = 0; j < num_nodes; j++) {
             dist_matrix[i][j] = travelTime[i][j];
         }
@@ -78,7 +80,7 @@ void TSP_heuristic(double** travelTime, int total, int* tour) {
     }
 
     // Apply 2-opt heuristic
-    two_opt(tour, num_nodes, dist_matrix);
+    two_opt(tour, num_nodes, dist_matrix, 2000);
 
     // Print the final tour
     for (int i = 0; i < num_nodes; i++) {
@@ -90,7 +92,6 @@ void TSP_heuristic(double** travelTime, int total, int* tour) {
     // Clean up
     for (int i = 0; i < num_nodes; i++) free(dist_matrix[i]);
     free(dist_matrix);
-    // free(tour);
     return;
 }
 
@@ -256,7 +257,7 @@ void TSP_heuristic(double** travelTime, int total, int* tour) {
         }
 
         Individual new_pop[POP_SIZE];
-        //printf("HI\n");
+        
         // GA main loop
         for (int gen = 0; gen < MAX_GEN; gen++) {
             // Elitism: keep best 2
@@ -264,11 +265,11 @@ void TSP_heuristic(double** travelTime, int total, int* tour) {
             new_pop[0] = population[0];
             new_pop[1] = population[1];
             int idx = 2;
-            //printf("HI, %d\n", gen);
+           
             while (idx < POP_SIZE) {
                 Individual p1 = tournament_select(population);
                 Individual p2 = tournament_select(population);
-                //printf("   %d\n", idx);
+                
                 Individual c1, c2;
                 c1.tour = (int*)malloc(num_nodes * sizeof(int));
                 c2.tour = (int*)malloc(num_nodes * sizeof(int));
@@ -281,24 +282,21 @@ void TSP_heuristic(double** travelTime, int total, int* tour) {
                         c2.tour[i] = p2.tour[i];
                     }
                 }
-                printTour(&c1);
-                printTour(&c2);
-                //printf("   %d\n", idx);
+                
+                
                 if ((double)rand() / RAND_MAX < MUTATION_RATE) mutate(&c1);
                 if ((double)rand() / RAND_MAX < MUTATION_RATE) mutate(&c2);
-                //printf("   %d\n", idx);
+            
                 compute_fitness(&c1);
                 compute_fitness(&c2);
-                //printf("   %d\n", idx);
+               
                 new_pop[idx++] = c1;
                 if (idx < POP_SIZE) new_pop[idx++] = c2;
                 //free(p1.tour);
                 //free(p2.tour);
             }
             printf("HIHIHIHI\n");
-            for (int i = 0; i < POP_SIZE; i++) {
-                //printf("BRUH, %d\n", i);
-
+            for (int i = 0; i < POP_SIZE; i++) {           
                 //free(population[i].tour);
                 population[i] = new_pop[i];
             }
